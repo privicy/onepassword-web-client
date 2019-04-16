@@ -1,0 +1,44 @@
+{
+  "name": "1password-web-api",
+  "version": "1.0.0",
+  "description": "Library to access 1password web vaults. Fully compatible in both browser and server environment.",
+  "main": "dist/library.js",
+  "files": [
+    "dist/**/*"
+  ],
+  "scripts": {
+    "build": "webpack --config webpack.config.js",
+    "start:dev": "webpack-dev-server"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/allroundexperts/1password-web-api.git"
+  },
+  "keywords": [
+    "1Password",
+    "web-api",
+    "api",
+    "1password-vault",
+    "1password-api",
+    "1password"
+  ],
+  "author": "Sibtain Ali",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/allroundexperts/1password-web-api/issues"
+  },
+  "homepage": "https://github.com/allroundexperts/1password-web-api#readme",
+  "dependencies": {
+    "@types/jsbn": "^1.2.29",
+    "base64url": "^3.0.1",
+    "jsbn": "^1.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^11.13.4",
+    "ts-loader": "^5.3.3",
+    "typescript": "^3.4.3",
+    "webpack": "^4.30.0",
+    "webpack-cli": "^3.3.0",
+    "webpack-dev-server": "^3.3.1"
+  }
+}

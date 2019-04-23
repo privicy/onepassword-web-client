@@ -11,17 +11,22 @@ module.exports = {
       }
     ]
   },
+  devtool: "source-map",
+  target: "web",
+  mode: "production",
+  node: {
+    buffer: true,
+    crypto: true
+  },
+  devServer: {
+    contentBase: "./dist"
+  },
   resolve: {
     extensions: [".tsx", ".ts", ".js"]
   },
-  mode: "development",
   output: {
-    filename: "bundle.js",
-    path: path.resolve(__dirname, "dist")
-  },
-  devServer: {
-    contentBase: path.join(__dirname, "dist"),
-    compress: true,
-    port: 9000
+    filename: "library.js",
+    path: path.resolve(__dirname, "dist"),
+    libraryTarget: "umd"
   }
 };

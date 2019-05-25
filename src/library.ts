@@ -11,7 +11,6 @@ import { BigInteger } from "jsbn";
 import { find } from "lodash";
 import { Device, Key, Auth, Session, Keysets } from "./Interface";
 import { N, g, request } from "./util";
-
 const base64safe = require("urlsafe-base64");
 const NodeRSA = require("node-rsa");
 const hkdf = require("futoin-hkdf");
@@ -26,7 +25,7 @@ export default class OnePassword {
   private encKeysets: any;
   private keysets: Keysets;
 
-  constructor(email: string, password: string, secretKey: string) {
+  constructor(email?: string, password?: string, secretKey?: string) {
     this.device = {
       clientName: "1Password for Web",
       clientVersion: "637",
@@ -36,26 +35,38 @@ export default class OnePassword {
       osVersion: "10.14.4",
       userAgent:
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36",
-      uuid: randomBytes(26)
-        .toString("hex")
-        .slice(0, 26)
+      uuid: ""
     };
-    const formattedKey = secretKey.replace(/-/g, "");
-    this.key = {
-      format: formattedKey.slice(0, 2),
-      id: formattedKey.slice(2, 8),
-      key: formattedKey.slice(8)
-    };
-    this.auth = {
-      email,
-      password
-    };
+    this.setCredentials(email, password, secretKey);
     this.session = { id: "", key: "" };
     this.keysets = { masterKey: "", privateKey: "", vaultKeys: {}, symKey: "" };
     this.requestID = 0;
   }
 
+  public setCredentials = (
+    email?: string,
+    password?: string,
+    secretKey?: string
+  ) => {
+    if (secretKey) {
+      const formattedKey = secretKey.replace(/-/g, "");
+      this.key = {
+        format: formattedKey.slice(0, 2),
+        id: formattedKey.slice(2, 8),
+        key: formattedKey.slice(8)
+      };
+    }
+
+    this.auth = {
+      ...(email && { email }),
+      ...(password && { password })
+    };
+  };
+
   public init = async () => {
+    this.device.uuid = randomBytes(26)
+      .toString("hex")
+      .slice(0, 26);
     await this.startSession();
     this.generateSRPKeys();
     const result = await this.SRPExchange();
@@ -160,7 +171,7 @@ export default class OnePassword {
   };
 
   private getItemsOverview = async (vaultID: string) => {
-    const items: any = {};
+    const items: Array<any> = [];
     const endpoint = `v1/vault/${vaultID}/items/overviews`;
     const { items: encItems } = await this.secureRequest(
       endpoint,
@@ -168,7 +179,8 @@ export default class OnePassword {
       false
     );
     encItems.map(({ uuid, encOverview: { data, iv } }: any) => {
-      items[uuid] = this.decryptItem(this.keysets.vaultKeys[vaultID], data, iv);
+      const item = this.decryptItem(this.keysets.vaultKeys[vaultID], data, iv);
+      items.push({ uuid, ...item });
     });
     return items;
   };

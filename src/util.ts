@@ -1,4 +1,4 @@
-const baseURL = "https://cors-anywhere.herokuapp.com/my.1password.com:443/api/";
+const baseURL = "https://my.1password.com/api/";
 export const request = async (
   endpoint: string,
   method: any,

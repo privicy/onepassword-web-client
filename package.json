@@ -1,9 +1,10 @@
 {
   "name": "1password-web-api",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Library to access 1password web vaults. Fully compatible in both browser and server environment.",
   "main": "dist/library.node.js",
   "browser": "dist/library.client.js",
+  "types": "dist/library.d.ts",
   "files": [
     "dist/**/*"
   ],

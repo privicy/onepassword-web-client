@@ -1,14 +1,16 @@
 {
   "name": "1password-web-api",
-  "version": "1.0.6",
+  "version": "1.0.8",
   "description": "Library to access 1password web vaults. Fully compatible in both browser and server environment.",
-  "main": "dist/library.js",
+  "main": "dist/library.node.js",
+  "browser": "dist/library.client.js",
   "files": [
     "dist/**/*"
   ],
   "scripts": {
     "build": "webpack --config webpack.config.js",
-    "start:dev": "webpack-dev-server"
+    "start:dev": "webpack-dev-server",
+    "start:node": "node dist/library.node.js"
   },
   "repository": {
     "type": "git",
@@ -36,6 +38,7 @@
     "futoin-hkdf": "^1.0.3",
     "jsbn": "^1.1.0",
     "lodash": "^4.17.11",
+    "node-fetch": "^2.6.0",
     "node-rsa": "^1.0.5",
     "urlsafe-base64": "^1.0.0"
   },

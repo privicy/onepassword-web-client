@@ -1,6 +1,7 @@
 const path = require("path");
+const webpack = require("webpack");
 
-module.exports = {
+const config = {
   entry: "./src/library.ts",
   module: {
     rules: [
@@ -11,13 +12,7 @@ module.exports = {
       }
     ]
   },
-  devtool: "source-map",
-  target: "web",
   mode: "production",
-  node: {
-    buffer: true,
-    crypto: true
-  },
   devServer: {
     contentBase: "./dist"
   },
@@ -25,9 +20,31 @@ module.exports = {
     extensions: [".tsx", ".ts", ".js"]
   },
   output: {
-    filename: "library.js",
     path: path.resolve(__dirname, "dist"),
     libraryTarget: "umd",
     globalObject: "typeof self !== 'undefined' ? self : this"
   }
 };
+
+const webConfig = {
+  ...config,
+  target: "web",
+  node: {
+    buffer: true,
+    crypto: true
+  },
+  output: { ...config.output, filename: "library.client.js" }
+};
+
+const serverConfig = {
+  ...config,
+  target: "node",
+  output: { ...config.output, filename: "library.node.js" },
+  plugins: [
+    new webpack.ProvidePlugin({
+      fetch: ["node-fetch", "default"]
+    })
+  ]
+};
+
+module.exports = [serverConfig, webConfig];

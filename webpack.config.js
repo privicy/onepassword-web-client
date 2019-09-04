@@ -1,8 +1,10 @@
 const path = require("path");
 const webpack = require("webpack");
+const DtsBundleWebpack = require("dts-bundle-webpack");
+const nodeExternals = require("webpack-node-externals");
 
 const config = {
-  entry: "./src/library.ts",
+  entry: "./src/Client.ts",
   module: {
     rules: [
       {
@@ -12,7 +14,16 @@ const config = {
       }
     ]
   },
-  mode: "production",
+  plugins: [
+    new DtsBundleWebpack({
+      name: "onepassword",
+      main: "dist/Client.d.ts",
+      removeSource: true,
+      outputAsModuleFolder: true
+    })
+  ],
+  mode: "development",
+  devtool: "inline-source-map",
   devServer: {
     contentBase: "./dist"
   },
@@ -33,15 +44,17 @@ const webConfig = {
     buffer: true,
     crypto: true
   },
-  output: { ...config.output, filename: "library.client.js" }
+  output: { ...config.output, filename: "onepassword.browser.js" }
 };
 
 const serverConfig = {
   ...config,
+  externals: [nodeExternals()],
   target: "node",
-  output: { ...config.output, filename: "library.node.js" },
+  output: { ...config.output, filename: "onepassword.node.js" },
   plugins: [
     new webpack.ProvidePlugin({
+      FormData: "form-data",
       fetch: ["node-fetch", "default"]
     })
   ]

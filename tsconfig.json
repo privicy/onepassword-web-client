@@ -5,6 +5,7 @@
     "outDir": "dist/",
     "lib": ["dom", "dom.iterable", "esnext"],
     "noImplicitAny": true,
+    "esModuleInterop": true,
     "module": "commonjs",
     "target": "es5",
     "jsx": "react",

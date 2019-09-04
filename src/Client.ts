@@ -1,7 +1,16 @@
 import base64safe from "urlsafe-base64";
+import { find } from "lodash";
 import { Cipher } from "./services/Cipher";
 import { Onepassword } from "./services/Onepassword";
-import { Client, Entry, Key, Session, VaultKey } from "./types";
+import {
+  Client,
+  Entry,
+  Key,
+  Session,
+  VaultKey,
+  DecryptedItemOverview,
+  DecryptedItemDetail
+} from "./types";
 
 export default class OnepasswordClient implements Client {
   private cipher: Cipher;
@@ -15,7 +24,7 @@ export default class OnepasswordClient implements Client {
   public async login(
     email: string,
     password: string,
-    secret?: string
+    secret: string
   ): Promise<void> {
     const key = this.getKey(secret);
     this.cipher.setKey(key);
@@ -30,27 +39,46 @@ export default class OnepasswordClient implements Client {
     await this.onepassword.verifySessionKey(clientHash, serverHash);
   }
 
-  public async getAccounts(): Promise<any> {
+  public async getAccounts(): Promise<Entry[]> {
     const encKeySets = await this.onepassword.getKeySets();
     const masterPrivateKey = this.cipher.getMasterPrivateKey(encKeySets);
     const encVaults = await this.onepassword.getVaults();
-    encVaults.map(async ({ uuid, access }) => {
+    const entries = encVaults.map(async ({ uuid, access }) => {
       const items = await this.onepassword.getItemsOverview(uuid);
       const { encVaultKey } = access[0];
-      const decryptKey = JSON.parse(
+      const { k } = JSON.parse(
         masterPrivateKey.decrypt(base64safe.decode(encVaultKey.data)).toString()
       ) as VaultKey;
-      items.map(async (item: any) => {
-        const {
-          uuid: itemId,
-          encOverview: { data: dataOverview, iv: dataiv }
-        } = item;
 
-        const {
-          encDetails: { data, iv }
-        } = await this.onepassword.getItemDetail(itemId, uuid);
+      return items.map(async item => {
+        const { encOverview } = item;
+        const { url, title, tags } = this.cipher.decryptItem(
+          k,
+          encOverview.data,
+          encOverview.iv
+        ) as DecryptedItemOverview;
+        const { encDetails } = await this.onepassword.getItemDetail(
+          item.uuid,
+          uuid
+        );
+        const { fields } = this.cipher.decryptItem(
+          k,
+          encDetails.data,
+          encDetails.iv
+        ) as DecryptedItemDetail;
+        const username = find(fields, ["designation", "username"]);
+        const password = find(fields, ["designation", "password"]);
+        return {
+          username: username ? username.value : "",
+          password: password ? password.value : "",
+          url,
+          name: title,
+          otp: "",
+          type: tags[0]
+        };
       });
     });
+    return await Promise.all((await Promise.all(entries)).flat());
   }
 
   public async addAccount(entry: Entry): Promise<boolean> {
@@ -71,14 +99,3 @@ export default class OnepasswordClient implements Client {
     };
   }
 }
-
-const client = new OnepasswordClient();
-
-client
-  .login(
-    "inovicsolutions@yahoo.com",
-    "Sibi1234@@",
-    "A3-4TNVYT-SZE2GC-SBTX4-QG96A-AJM4Y-H4K9N"
-  )
-  .then(() => client.getAccounts())
-  .catch(console.log);

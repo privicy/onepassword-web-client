@@ -9,7 +9,7 @@
     "dist/**/*"
   ],
   "scripts": {
-    "build": "webpack --config webpack.config.js",
+    "build": "webpack && rm -r ./dist/services/",
     "start:dev": "webpack-dev-server",
     "start:node": "webpack && node dist/onepassword.node.js"
   },

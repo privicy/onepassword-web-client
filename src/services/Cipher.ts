@@ -11,7 +11,14 @@ import hkdf from "futoin-hkdf";
 import xor from "buffer-xor";
 import { BigInteger } from "jsbn";
 import { N, g } from "../config";
-import { Key, Auth, Session, Keysets } from "../types";
+import {
+  Key,
+  Auth,
+  Session,
+  Keysets,
+  DecryptedItemDetail,
+  DecryptedItemOverview
+} from "../types";
 
 export class Cipher {
   private session: Session;
@@ -100,7 +107,11 @@ export class Cipher {
     return this.getPrivateKey(priKey);
   }
 
-  public decryptItem(key: string, data: string, piv: string): any {
+  public decryptItem(
+    key: string,
+    data: string,
+    piv: string
+  ): DecryptedItemDetail | DecryptedItemOverview {
     const keyData = base64safe.decode(data);
     const iv = base64safe.decode(piv);
     const decipher = createDecipheriv(

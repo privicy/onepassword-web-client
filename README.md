@@ -1,4 +1,4 @@
-# Lastpass Client
+# OnePassword Web Client
 
 ## Class Hierarchy
 
@@ -34,7 +34,7 @@
 
 ### login
 
-▸ **login**(`username`: string, `password`: string, `otp?`: string): _Promise‹void›_
+▸ **login**(`username`: string, `password`: string, `secret`: string): _Promise‹void›_
 
 **Parameters:**
 
@@ -42,7 +42,7 @@
 | ---------- | ------ |
 | `username` | string |
 | `password` | string |
-| `otp?`     | string |
+| `secret`   | string |
 
 **Returns:** _Promise‹void›_
 

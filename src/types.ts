@@ -98,7 +98,7 @@ export type EncryptedVault = {
   activeKeyUuid: string;
   activeItemCount: number;
   clientAccess: number;
-  access: {
+  access: Array<{
     vaultUuid: string;
     accessorType: string;
     accessorUuid: string;
@@ -107,7 +107,7 @@ export type EncryptedVault = {
     vaultKeySN: number;
     encryptedBy: string;
     encVaultKey: EncryptionInfo;
-  }[];
+  }>;
 };
 
 type EncryptionInfo = {
@@ -145,7 +145,12 @@ export type DecryptedItemOverview = {
 };
 
 export type DecryptedItemDetail = {
-  sections: { name: string; title: string; fields: string[] }[];
-  fields: { name: string; value: string; type: string; designation: string }[];
+  sections: Array<{ name: string; title: string; fields: string[] }>;
+  fields: Array<{
+    name: string;
+    value: string;
+    type: string;
+    designation: string;
+  }>;
   notesPlain: string;
 };

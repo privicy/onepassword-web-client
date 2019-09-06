@@ -15,7 +15,7 @@ export interface Client {
     secret?: string
   ) => Promise<void>;
   getAccounts: () => Promise<Entry[]>;
-  addAccount: (account: Entry) => Promise<boolean>;
+  addAccount: (account: Entry) => Promise<void>;
 }
 
 export type Device = Record<

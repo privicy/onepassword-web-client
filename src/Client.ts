@@ -81,9 +81,7 @@ export default class OnepasswordClient implements Client {
     return await Promise.all((await Promise.all(entries)).flat());
   }
 
-  public async addAccount(entry: Entry): Promise<boolean> {
-    return false;
-  }
+  public async addAccount(entry: Entry): Promise<void> {}
 
   private setSession(session: Session) {
     this.onepassword.setSession(session);

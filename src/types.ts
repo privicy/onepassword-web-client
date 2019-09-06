@@ -9,7 +9,11 @@ export type EntryFields =
 export type Entry = Record<EntryFields, string>;
 
 export interface Client {
-  login: (username: string, password: string, otp?: string) => Promise<void>;
+  login: (
+    password: string,
+    username?: string,
+    secret?: string
+  ) => Promise<void>;
   getAccounts: () => Promise<Entry[]>;
   addAccount: (account: Entry) => Promise<boolean>;
 }

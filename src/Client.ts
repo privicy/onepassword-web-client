@@ -22,8 +22,8 @@ export default class OnepasswordClient implements Client {
   }
 
   public async login(
-    email: string,
     password: string,
+    email: string,
     secret: string
   ): Promise<void> {
     const key = this.getKey(secret);

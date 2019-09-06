@@ -9,13 +9,14 @@
     "dist/**/*"
   ],
   "scripts": {
+    "prepare": "webpack && rm -r ./dist/services/",
     "build": "webpack && rm -r ./dist/services/",
     "start:dev": "webpack-dev-server",
     "start:node": "webpack && node dist/onepassword.node.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/allroundexperts/onepassword-web-client.git"
+    "url": "git+https://github.com/DesicLabs/onepassword-web-client.git"
   },
   "keywords": [
     "1Password",
@@ -28,9 +29,9 @@
   "author": "Sibtain Ali",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/allroundexperts/onepassword-web-client/issues"
+    "url": "https://github.com/DesicLabs/onepassword-web-client/issues"
   },
-  "homepage": "https://github.com/allroundexperts/onepassword-web-client#readme",
+  "homepage": "https://github.com/DesicLabs/onepassword-web-client#readme",
   "dependencies": {
     "@types/buffer-xor": "^2.0.0",
     "@types/jsbn": "^1.2.29",

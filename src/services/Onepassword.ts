@@ -9,7 +9,8 @@ import {
   UserAuth,
   Keysets,
   EncryptedVault,
-  EncryptedItem
+  EncryptedItem,
+  EncryptedItemModified
 } from "../types";
 import { device } from "../config";
 
@@ -93,15 +94,21 @@ export class Onepassword {
     return keysets as Keysets;
   }
 
-  public async getVaults(): Promise<EncryptedVault[]> {
-    const endpoint = "v1/vaults";
-    return await this.requestService.secureRequest(endpoint, "GET");
-  }
-
-  public async getItemsOverview(vaultID: string): Promise<EncryptedItem[]> {
-    const endpoint = `v1/vault/${vaultID}/items/overviews`;
-    const { items } = await this.requestService.secureRequest(endpoint, "GET");
-    return items;
+  public async getItemsOverview(): Promise<EncryptedItemModified[]> {
+    const vaults = await this.getVaults();
+    const items = vaults.map(async ({ uuid, access }) => {
+      const endpoint = `v1/vault/${uuid}/items/overviews`;
+      const { items } = await this.requestService.secureRequest(
+        endpoint,
+        "GET"
+      );
+      return items.map((item: EncryptedItem) => ({
+        ...item,
+        vaultID: uuid,
+        access
+      }));
+    });
+    return (await Promise.all(items)).flat();
   }
 
   public async getItemDetail(
@@ -111,6 +118,11 @@ export class Onepassword {
     const endpoint = `v1/vault/${vaultID}/item/${itemID}`;
     const { item } = await this.requestService.secureRequest(endpoint, "GET");
     return item;
+  }
+
+  private async getVaults(): Promise<EncryptedVault[]> {
+    const endpoint = "v1/vaults";
+    return await this.requestService.secureRequest(endpoint, "GET");
   }
 
   private async enrollDevice(sessionID: string): Promise<boolean> {

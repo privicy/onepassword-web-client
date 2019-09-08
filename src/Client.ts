@@ -9,7 +9,10 @@ import {
   Session,
   VaultKey,
   DecryptedItemOverview,
-  DecryptedItemDetail
+  DecryptedItemDetail,
+  EntryCredentials,
+  EncryptedItem,
+  EncryptedItemModified
 } from "./types";
 
 export default class OnepasswordClient implements Client {
@@ -42,43 +45,80 @@ export default class OnepasswordClient implements Client {
   public async getAccounts(): Promise<Entry[]> {
     const encKeySets = await this.onepassword.getKeySets();
     const masterPrivateKey = this.cipher.getMasterPrivateKey(encKeySets);
-    const encVaults = await this.onepassword.getVaults();
-    const entries = encVaults.map(async ({ uuid, access }) => {
-      const items = await this.onepassword.getItemsOverview(uuid);
-      const { encVaultKey } = access[0];
-      const { k } = JSON.parse(
-        masterPrivateKey.decrypt(base64safe.decode(encVaultKey.data)).toString()
-      ) as VaultKey;
-
-      return items.map(async item => {
-        const { encOverview } = item;
+    const items = await this.onepassword.getItemsOverview();
+    const entries = items.map(
+      (item): Entry => {
+        const {
+          access: [{ encVaultKey }],
+          encOverview
+        } = item;
+        const { k } = JSON.parse(
+          masterPrivateKey
+            .decrypt(base64safe.decode(encVaultKey.data))
+            .toString()
+        ) as VaultKey;
         const { url, title, tags } = this.cipher.decryptItem(
           k,
           encOverview.data,
           encOverview.iv
         ) as DecryptedItemOverview;
-        const { encDetails } = await this.onepassword.getItemDetail(
-          item.uuid,
-          uuid
-        );
-        const { fields } = this.cipher.decryptItem(
-          k,
-          encDetails.data,
-          encDetails.iv
-        ) as DecryptedItemDetail;
-        const username = find(fields, ["designation", "username"]);
-        const password = find(fields, ["designation", "password"]);
         return {
-          username: username ? username.value : "",
-          password: password ? password.value : "",
           url,
           name: title,
-          otp: "",
           type: tags[0]
         };
-      });
-    });
-    return await Promise.all((await Promise.all(entries)).flat());
+      }
+    );
+    return entries;
+  }
+
+  public async getAccountCredentials(fqdn: string): Promise<EntryCredentials> {
+    let item: EncryptedItemModified;
+    const encKeySets = await this.onepassword.getKeySets();
+    const masterPrivateKey = this.cipher.getMasterPrivateKey(encKeySets);
+    const items = await this.onepassword.getItemsOverview();
+    for (let i = 0; i < items.length; i++) {
+      const {
+        encOverview,
+        access: [{ encVaultKey }]
+      } = items[i];
+      const { k } = JSON.parse(
+        masterPrivateKey.decrypt(base64safe.decode(encVaultKey.data)).toString()
+      ) as VaultKey;
+      const { url } = this.cipher.decryptItem(
+        k,
+        encOverview.data,
+        encOverview.iv
+      ) as DecryptedItemOverview;
+      if (url.match(new RegExp(fqdn))) {
+        item = items[i];
+        break;
+      }
+    }
+    if (!item) throw new Error("Account not found.");
+
+    const {
+      access: [{ encVaultKey }]
+    } = item;
+    const { k } = JSON.parse(
+      masterPrivateKey.decrypt(base64safe.decode(encVaultKey.data)).toString()
+    ) as VaultKey;
+    const { encDetails } = await this.onepassword.getItemDetail(
+      item.vaultID,
+      item.uuid
+    );
+    const { fields } = this.cipher.decryptItem(
+      k,
+      encDetails.data,
+      encDetails.iv
+    ) as DecryptedItemDetail;
+    const username = find(fields, ["designation", "username"]);
+    const password = find(fields, ["designation", "password"]);
+    return {
+      username: username ? username.value : "",
+      password: password ? password.value : "",
+      otp: ""
+    };
   }
 
   public async addAccount(entry: Entry): Promise<void> {}

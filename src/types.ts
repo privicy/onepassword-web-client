@@ -2,7 +2,13 @@ export type EntryFields = "name" | "url" | "type";
 
 export type Entry = Record<EntryFields, string>;
 
-export type EntryCredentials = Record<"username" | "password" | "otp", string>;
+export type EntryCredentialsFields = "username" | "password" | "otp";
+
+export type EntryCredentials = Record<EntryCredentialsFields, string>;
+
+export type RawEntryFields = EntryFields & EntryCredentialsFields;
+
+export type RawEntry = Entry & EntryCredentials;
 
 export interface Client {
   login: (

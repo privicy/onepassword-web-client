@@ -12,7 +12,8 @@ import {
   DecryptedItemDetail,
   EntryCredentials,
   EncryptedItem,
-  EncryptedItemModified
+  EncryptedItemModified,
+  RawEntry
 } from "./types";
 
 export default class OnepasswordClient implements Client {
@@ -121,7 +122,7 @@ export default class OnepasswordClient implements Client {
     };
   }
 
-  public async addAccount(entry: Entry): Promise<void> {}
+  public async addAccount(entry: RawEntry): Promise<void> {}
 
   private setSession(session: Session) {
     this.onepassword.setSession(session);

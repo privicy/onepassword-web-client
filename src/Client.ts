@@ -11,7 +11,6 @@ import {
   DecryptedItemOverview,
   DecryptedItemDetail,
   EntryCredentials,
-  EncryptedItem,
   EncryptedItemModified,
   RawEntry
 } from "./types";
@@ -103,8 +102,8 @@ export default class OnepasswordClient implements Client {
       masterPrivateKey.decrypt(base64safe.decode(encVaultKey.data)).toString()
     ) as VaultKey;
     const { encDetails } = await this.onepassword.getItemDetail(
-      item.vaultID,
-      item.uuid
+      item.uuid,
+      item.vaultID
     );
     const { fields } = this.cipher.decryptItem(
       k,

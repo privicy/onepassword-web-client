@@ -47,29 +47,27 @@ export default class OnepasswordClient implements Client {
     const encKeySets = await this.onepassword.getKeySets();
     const masterPrivateKey = this.cipher.getMasterPrivateKey(encKeySets);
     const items = await this.onepassword.getItemsOverview();
-    const entries = items.map(
-      (item): Entry => {
-        const {
-          access: [{ encVaultKey }],
-          encOverview
-        } = item;
-        const { k } = JSON.parse(
-          masterPrivateKey
-            .decrypt(base64safe.decode(encVaultKey.data))
-            .toString()
-        ) as VaultKey;
-        const { url, title, tags } = this.cipher.decryptItem(
-          k,
-          encOverview.data,
-          encOverview.iv
-        ) as DecryptedItemOverview;
-        return {
+    const entries = items.reduce((result: Entry[], item): Entry[] => {
+      const {
+        access: [{ encVaultKey }],
+        encOverview
+      } = item;
+      const { k } = JSON.parse(
+        masterPrivateKey.decrypt(base64safe.decode(encVaultKey.data)).toString()
+      ) as VaultKey;
+      const { url, title, tags } = this.cipher.decryptItem(
+        k,
+        encOverview.data,
+        encOverview.iv
+      ) as DecryptedItemOverview;
+      if (url.length > 0)
+        result.push({
           url,
           name: title,
           type: tags[0]
-        };
-      }
-    );
+        });
+      return result;
+    }, []);
     return entries;
   }
 

@@ -1,5 +1,5 @@
 {
-  "name": "@desiclabs/onepassword-web-client",
+  "name": "@privicy/onepassword-web-client",
   "version": "1.0.6",
   "description": "Library to access 1password web vaults. Fully compatible in both browser and server environment.",
   "main": "dist/onepassword.node.js",
@@ -16,7 +16,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/DesicLabs/onepassword-web-client.git"
+    "url": "git+https://github.com/privicy/onepassword-web-client.git"
   },
   "keywords": [
     "1Password",
@@ -29,9 +29,9 @@
   "author": "Sibtain Ali",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/DesicLabs/onepassword-web-client/issues"
+    "url": "https://github.com/privicy/onepassword-web-client/issues"
   },
-  "homepage": "https://github.com/DesicLabs/onepassword-web-client#readme",
+  "homepage": "https://github.com/privicy/onepassword-web-client#readme",
   "dependencies": {
     "@types/buffer-xor": "^2.0.0",
     "@types/jsbn": "^1.2.29",

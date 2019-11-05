@@ -59,12 +59,14 @@ export default class OnepasswordClient implements Client {
         encOverview.data,
         encOverview.iv
       ) as DecryptedItemOverview;
-      if (url.length > 0)
+      if (url && url.length > 0) {
+        const tag = tags && tags.length ? tags[0] : null;
         result.push({
           url,
           name: title.toLowerCase(),
           type: tags[0]
         });
+      }
       return result;
     }, []);
     return entries;

@@ -67,7 +67,7 @@ export default class OnepasswordClient implements Client {
         result.push({
           url: url,
           name: title.toLowerCase(),
-          type: tags[0],
+          type: (tags && tags.length) ? tags[0] : null,
           username: ainfo,
         });
       }

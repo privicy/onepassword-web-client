@@ -63,12 +63,14 @@ export default class OnepasswordClient implements Client {
 
       const { url, title, tags, ainfo } = decryptedItem;
       
-      result.push({
-        url: url || '',
-        name: title.toLowerCase(),
-        type: tags[0],
-        username: ainfo,
-      });
+      if (url) {
+        result.push({
+          url: url,
+          name: title.toLowerCase(),
+          type: tags[0],
+          username: ainfo,
+        });
+      }
       
       return result;
     }, []);

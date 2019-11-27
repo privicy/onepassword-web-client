@@ -42,7 +42,8 @@ const webConfig = {
   target: "web",
   node: {
     buffer: true,
-    crypto: true
+    crypto: true,
+    querystring: true
   },
   output: { ...config.output, filename: "onepassword.browser.js" }
 };

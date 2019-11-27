@@ -1,3 +1,5 @@
+import queryString from "querystring";
+
 export const pluck = (properties: string[], data: any[]) => {
   const obj: any = {};
   properties.map(param => {
@@ -17,7 +19,8 @@ export const extractOtp = (sections: any[]) => {
   sections.map(({ fields }) => {
     fields.map(({ n, v }: any) => {
       if (!!n.match(/TOTP/gi)) {
-        otp = v;
+        const { secret = "" } = queryString.parse(v.split("?").pop());
+        otp = secret as string;
       }
     });
   });

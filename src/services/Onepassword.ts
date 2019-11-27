@@ -1,5 +1,5 @@
 import { randomBytes } from "crypto";
-import NodeRSA from "node-rsa";
+import { flatten } from "lodash";
 import RequestService from "./Request";
 import {
   Key,
@@ -61,7 +61,8 @@ export class Onepassword {
       sessionID: newSessionID,
       userB
     } = await this.requestService.request(endpoint, "POST", payload, headers);
-    if (sessionID !== newSessionID) throw new Error("Session ID mismatch.");
+    if (sessionID !== newSessionID)
+      throw new Error("Invalid master password or secret key.");
     return { bigB: userB };
   }
 
@@ -108,7 +109,8 @@ export class Onepassword {
         access
       }));
     });
-    return (await Promise.all(items)).flat();
+    const arr = await Promise.all(items);
+    return flatten(arr);
   }
 
   public async getItemDetail(

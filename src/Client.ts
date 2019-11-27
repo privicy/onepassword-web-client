@@ -14,6 +14,7 @@ import {
   EncryptedItemModified,
   RawEntry
 } from "./types";
+import { extractOtp } from "./utilities";
 
 export default class OnepasswordClient implements Client {
   private cipher: Cipher;
@@ -53,7 +54,9 @@ export default class OnepasswordClient implements Client {
       } = item;
       try {
         const { k } = JSON.parse(
-          masterPrivateKey.decrypt(base64safe.decode(encVaultKey.data)).toString()
+          masterPrivateKey
+            .decrypt(base64safe.decode(encVaultKey.data))
+            .toString()
         ) as VaultKey;
         const decryptedItem = this.cipher.decryptItem(
           k,
@@ -62,16 +65,16 @@ export default class OnepasswordClient implements Client {
         ) as DecryptedItemOverview;
 
         const { url, title, tags, ainfo } = decryptedItem;
-        
+
         if (url) {
           result.push({
             url: url,
             name: title.toLowerCase(),
-            type: (tags && tags.length) ? tags[0] : null,
-            username: ainfo,
+            type: tags && tags.length ? tags[0] : null,
+            username: ainfo
           });
         }
-      } catch(e) {
+      } catch (e) {
         console.error("cant decrypt item: ", item, e);
       }
       return result;
@@ -114,17 +117,18 @@ export default class OnepasswordClient implements Client {
       item.uuid,
       item.vaultID
     );
-    const { fields } = this.cipher.decryptItem(
+    const { fields, sections } = this.cipher.decryptItem(
       k,
       encDetails.data,
       encDetails.iv
     ) as DecryptedItemDetail;
     const username = find(fields, ["designation", "username"]);
     const password = find(fields, ["designation", "password"]);
+    const otp = extractOtp(sections);
     return {
       username: username ? username.value : "",
       password: password ? password.value : "",
-      otp: ""
+      otp
     };
   }
 

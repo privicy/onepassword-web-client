@@ -11,3 +11,15 @@ export const pluck = (properties: string[], data: any[]) => {
     });
   }, obj);
 };
+
+export const extractOtp = (sections: any[]) => {
+  let otp = "";
+  sections.map(({ fields }) => {
+    fields.map(({ n, v }: any) => {
+      if (!!n.match(/TOTP/gi)) {
+        otp = v;
+      }
+    });
+  });
+  return otp;
+};

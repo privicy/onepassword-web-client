@@ -1,6 +1,6 @@
 {
   "name": "@privicy/onepassword-web-client",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "description": "Library to access 1password web vaults. Fully compatible in both browser and server environment.",
   "main": "dist/onepassword.node.js",
   "browser": "dist/onepassword.browser.js",

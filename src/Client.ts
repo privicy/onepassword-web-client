@@ -69,7 +69,7 @@ export default class OnepasswordClient implements Client {
         if (url) {
           result.push({
             url: url,
-            name: title.toLowerCase(),
+            name: title,
             type: tags && tags.length ? tags[0] : null,
             username: ainfo
           });
@@ -95,15 +95,17 @@ export default class OnepasswordClient implements Client {
       const { k } = JSON.parse(
         masterPrivateKey.decrypt(base64safe.decode(encVaultKey.data)).toString()
       ) as VaultKey;
-      const { url } = this.cipher.decryptItem(
-        k,
-        encOverview.data,
-        encOverview.iv
-      ) as DecryptedItemOverview;
-      if (url.match(new RegExp(fqdn))) {
-        item = items[i];
-        break;
-      }
+      try {
+        const { url } = this.cipher.decryptItem(
+          k,
+          encOverview.data,
+          encOverview.iv
+        ) as DecryptedItemOverview;
+        if (url.match(new RegExp(fqdn))) {
+          item = items[i];
+          break;
+        }
+      } catch {}
     }
     if (!item) throw new Error("Account not found.");
 

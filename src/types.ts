@@ -50,10 +50,14 @@ export type Auth = {
 export type Session = Record<"id" | "key", string>;
 
 export type Keysets = {
-  masterKey: string;
-  symKey: string;
-  privateKey: any;
-  vaultKeys: any;
+  encPriKey: EncryptedPrivateKey;
+  encSPriKey: EncryptedPrivateKey;
+  encSymKey: EncryptedPrivateKey;
+  encryptedBy: string;
+  pubKey: PublicKey;
+  sn: Number;
+  sPubKey: PublicKey;
+  uuid: string;
 };
 
 export type HttpHeaders = Record<string, string>;
@@ -79,12 +83,7 @@ export type AuthResponse = Record<
 > &
   Record<"userAuth", UserAuth>;
 
-export type SecureRequestResponse = Record<
-  "kid" | "enc" | "cty" | "iv" | "data",
-  string
->;
-
-export type VaultKey = {
+export type PublicKey = {
   alg: string;
   ext: boolean;
   k: string;
@@ -101,7 +100,7 @@ export type EncryptedVault = {
   attrVersion: number;
   contentVersion: number;
   itemAttrsVersion: number;
-  encAttrs: EncryptionInfo;
+  encAttrs: EncryptedPrivateKey;
   activeKeyUuid: string;
   activeItemCount: number;
   clientAccess: number;
@@ -113,16 +112,19 @@ export type EncryptedVault = {
     leaseTimeout: number;
     vaultKeySN: number;
     encryptedBy: string;
-    encVaultKey: EncryptionInfo;
+    encVaultKey: EncryptedPrivateKey;
   }>;
 };
 
-type EncryptionInfo = {
+export type EncryptedPrivateKey = {
+  alg?: string;
   cty: string;
   data: string;
   enc: string;
   iv: string;
   kid: string;
+  p2c?: number;
+  p2s?: string;
 };
 
 export type EncryptedItem = {
@@ -135,8 +137,8 @@ export type EncryptedItem = {
   packageUuid: string;
   itemVersion: number;
   encryptedBy: string;
-  encOverview: EncryptionInfo;
-  encDetails?: EncryptionInfo;
+  encOverview: EncryptedPrivateKey;
+  encDetails?: EncryptedPrivateKey;
 };
 
 export type EncryptedItemModified = {

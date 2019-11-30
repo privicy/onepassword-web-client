@@ -86,13 +86,13 @@ export class Onepassword {
     return true;
   }
 
-  public async getKeySets(): Promise<Keysets> {
+  public async getKeySets(): Promise<Keysets[]> {
     const endpoint = "v1/account/keysets";
     const { keysets } = await this.requestService.secureRequest(
       endpoint,
       "GET"
     );
-    return keysets as Keysets;
+    return keysets as Keysets[];
   }
 
   public async getItemsOverview(): Promise<EncryptedItemModified[]> {

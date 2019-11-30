@@ -11,7 +11,7 @@ import {
   HttpBody,
   HttpMethod,
   HttpHeaders,
-  SecureRequestResponse
+  EncryptedPrivateKey
 } from "../types";
 
 export default class {
@@ -77,7 +77,7 @@ export default class {
         method,
         `https://my.1password.com/api/${endpoint}`
       )
-    })) as SecureRequestResponse;
+    })) as EncryptedPrivateKey;
     if (kid !== this.session.id) throw new Error("Session mismatch.");
     const decipher = createDecipheriv(
       "aes-256-gcm",

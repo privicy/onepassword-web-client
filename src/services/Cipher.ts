@@ -99,12 +99,24 @@ export class Cipher {
     return base64safe.encode(hashConcat);
   }
 
-  public getMasterPrivateKey(encKeysets: Keysets): NodeRSA {
-    const { encSymKey, encPriKey } = find(encKeysets, ["encryptedBy", "mp"]);
-    const masterKey = this.deriveMasterUnlockKey(encSymKey);
-    const symKey = this.deriveSymKey(masterKey, encSymKey);
-    const priKey = this.derivePrivateKey(symKey, encPriKey);
-    return this.getPrivateKey(priKey);
+  public getMasterPrivateKeys(encKeysets: Keysets[]): Record<string, NodeRSA> {
+    return encKeysets.reduce(
+      (acc: any, { encSymKey, encPriKey, encryptedBy, uuid }) => {
+        let symKey;
+        if (encryptedBy === "mp") {
+          const masterKey = this.deriveMasterUnlockKey(encSymKey);
+          symKey = this.deriveSymKey(masterKey, encSymKey);
+        } else {
+          symKey = JSON.parse(
+            (acc[encryptedBy] as NodeRSA).decrypt(encSymKey.data).toString()
+          ).k;
+        }
+        const priKey = this.derivePrivateKey(symKey, encPriKey);
+        acc[uuid] = this.getPrivateKey(priKey);
+        return acc;
+      },
+      {}
+    );
   }
 
   public decryptItem(

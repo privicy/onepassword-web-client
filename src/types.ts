@@ -1,4 +1,4 @@
-export type EntryFields = "name" | "url" | "username" | "type";
+export type EntryFields = "id" | "name" | "url" | "username" | "type";
 
 export type Entry = Record<EntryFields, string>;
 
@@ -50,13 +50,13 @@ export type Auth = {
 export type Session = Record<"id" | "key", string>;
 
 export type Keysets = {
-  encPriKey: EncryptedPrivateKey;
-  encSPriKey: EncryptedPrivateKey;
-  encSymKey: EncryptedPrivateKey;
+  encPriKey: EncryptedPayload;
+  encSPriKey: EncryptedPayload;
+  encSymKey: EncryptedPayload;
   encryptedBy: string;
-  pubKey: PublicKey;
+  pubKey: AsymettricKey;
   sn: Number;
-  sPubKey: PublicKey;
+  sPubKey: AsymettricKey;
   uuid: string;
 };
 
@@ -83,7 +83,7 @@ export type AuthResponse = Record<
 > &
   Record<"userAuth", UserAuth>;
 
-export type PublicKey = {
+export type AsymettricKey = {
   alg: string;
   ext: boolean;
   k: string;
@@ -100,7 +100,7 @@ export type EncryptedVault = {
   attrVersion: number;
   contentVersion: number;
   itemAttrsVersion: number;
-  encAttrs: EncryptedPrivateKey;
+  encAttrs: EncryptedPayload;
   activeKeyUuid: string;
   activeItemCount: number;
   clientAccess: number;
@@ -112,16 +112,16 @@ export type EncryptedVault = {
     leaseTimeout: number;
     vaultKeySN: number;
     encryptedBy: string;
-    encVaultKey: EncryptedPrivateKey;
+    encVaultKey: EncryptedPayload;
   }>;
 };
 
-export type EncryptedPrivateKey = {
+export type EncryptedPayload = {
   alg?: string;
   cty: string;
   data: string;
   enc: string;
-  iv: string;
+  iv?: string;
   kid: string;
   p2c?: number;
   p2s?: string;
@@ -137,8 +137,8 @@ export type EncryptedItem = {
   packageUuid: string;
   itemVersion: number;
   encryptedBy: string;
-  encOverview: EncryptedPrivateKey;
-  encDetails?: EncryptedPrivateKey;
+  encOverview: EncryptedPayload;
+  encDetails?: EncryptedPayload;
 };
 
 export type EncryptedItemModified = {

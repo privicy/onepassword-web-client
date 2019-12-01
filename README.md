@@ -35,7 +35,7 @@
 
 ### getAccountCredentials
 
-▸ **getAccountCredentials**(): _Promise‹[EntryCredentials]_
+▸ **getAccountCredentials**(`accountId`: string): _Promise‹[EntryCredentials]_
 
 **Returns:** _Promise_
 
@@ -65,7 +65,7 @@
 
 ### RawEntryFields
 
-Ƭ **RawEntryFields**: \_"name" | "url" | "type" | "username" | "password" | "otp"
+Ƭ **RawEntryFields**: \_"id" | "name" | "url" | "type" | "username" | "password" | "otp"
 
 ---
 
@@ -77,7 +77,7 @@
 
 ### EntryFields
 
-Ƭ **EntryFields**: \_"name" | "url" | "type"
+Ƭ **EntryFields**: \_"id" | "name" | "url" | "type"
 
 ---
 

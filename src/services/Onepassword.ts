@@ -95,22 +95,17 @@ export class Onepassword {
     return keysets as Keysets[];
   }
 
-  public async getItemsOverview(): Promise<EncryptedItemModified[]> {
-    const vaults = await this.getVaults();
-    const items = vaults.map(async ({ uuid, access }) => {
-      const endpoint = `v1/vault/${uuid}/items/overviews`;
-      const { items } = await this.requestService.secureRequest(
-        endpoint,
-        "GET"
-      );
-      return items.map((item: EncryptedItem) => ({
-        ...item,
-        vaultID: uuid,
-        access
-      }));
-    });
-    const arr = await Promise.all(items);
-    return flatten(arr);
+  public async getVaults(): Promise<EncryptedVault[]> {
+    const endpoint = "v1/vaults";
+    return await this.requestService.secureRequest(endpoint, "GET");
+  }
+
+  public async getItemsOverview(
+    vaultId: string
+  ): Promise<EncryptedItemModified[]> {
+    const endpoint = `v1/vault/${vaultId}/items/overviews`;
+    const { items } = await this.requestService.secureRequest(endpoint, "GET");
+    return items;
   }
 
   public async getItemDetail(
@@ -120,11 +115,6 @@ export class Onepassword {
     const endpoint = `v1/vault/${vaultID}/item/${itemID}`;
     const { item } = await this.requestService.secureRequest(endpoint, "GET");
     return item;
-  }
-
-  private async getVaults(): Promise<EncryptedVault[]> {
-    const endpoint = "v1/vaults";
-    return await this.requestService.secureRequest(endpoint, "GET");
   }
 
   private async enrollDevice(sessionID: string): Promise<boolean> {

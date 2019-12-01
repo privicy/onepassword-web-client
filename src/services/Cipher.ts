@@ -2,23 +2,17 @@ import {
   createDiffieHellman,
   pbkdf2Sync,
   createHash,
-  createDecipheriv
+  createDecipheriv,
+  createCipheriv,
+  randomBytes
 } from "crypto";
 import base64safe from "urlsafe-base64";
-import { find } from "lodash";
 import NodeRSA from "node-rsa";
 import hkdf from "futoin-hkdf";
 import xor from "buffer-xor";
 import { BigInteger } from "jsbn";
 import { N, g } from "../config";
-import {
-  Key,
-  Auth,
-  Session,
-  Keysets,
-  DecryptedItemDetail,
-  DecryptedItemOverview
-} from "../types";
+import { Key, Auth, Session, Keysets, EncryptedPayload } from "../types";
 
 export class Cipher {
   private session: Session;
@@ -102,39 +96,52 @@ export class Cipher {
   public getMasterPrivateKeys(encKeysets: Keysets[]): Record<string, NodeRSA> {
     return encKeysets.reduce(
       (acc: any, { encSymKey, encPriKey, encryptedBy, uuid }) => {
-        let symKey;
-        if (encryptedBy === "mp") {
-          const masterKey = this.deriveMasterUnlockKey(encSymKey);
-          symKey = this.deriveSymKey(masterKey, encSymKey);
-        } else {
-          symKey = JSON.parse(
-            (acc[encryptedBy] as NodeRSA).decrypt(encSymKey.data).toString()
-          ).k;
-        }
-        const priKey = this.derivePrivateKey(symKey, encPriKey);
-        acc[uuid] = this.getPrivateKey(priKey);
+        const symKey =
+          encryptedBy === "mp"
+            ? this.decipher(encSymKey, this.deriveMasterUnlockKey(encSymKey))
+            : JSON.parse(
+                (acc[encryptedBy] as NodeRSA).decrypt(encSymKey.data).toString()
+              );
+        acc[uuid] = this.formatPrivateKey(
+          this.decipher(encPriKey, base64safe.decode(symKey.k))
+        );
         return acc;
       },
       {}
     );
   }
 
-  public decryptItem(
-    key: string,
-    data: string,
-    piv: string
-  ): DecryptedItemDetail | DecryptedItemOverview {
-    const keyData = base64safe.decode(data);
-    const iv = base64safe.decode(piv);
-    const decipher = createDecipheriv(
-      "aes-256-gcm",
-      base64safe.decode(key),
-      iv
-    );
-    decipher.setAuthTag(keyData.slice(-16));
-    let plainText = decipher.update(keyData.slice(0, -16), null, "utf8");
-    plainText += decipher.final("utf8");
-    return JSON.parse(plainText);
+  public decipher(payload: EncryptedPayload, key: NodeRSA | Buffer) {
+    const data = base64safe.decode(payload.data);
+    switch (payload.enc) {
+      case "A256GCM": {
+        const iv = base64safe.decode(payload.iv);
+        const decipher = createDecipheriv("aes-256-gcm", key as Buffer, iv);
+        decipher.setAuthTag(data.slice(-16));
+        let plainText = decipher.update(data.slice(0, -16), null, "utf8");
+        plainText += decipher.final("utf8");
+        return JSON.parse(plainText);
+      }
+      case "RSA-OAEP":
+        return JSON.parse((key as NodeRSA).decrypt(data).toString());
+      default:
+        throw new Error("Unknown encryption method.");
+    }
+  }
+
+  public cipher(payload: string, { key, id }: any): EncryptedPayload {
+    const iv = randomBytes(12);
+    const cipher = createCipheriv("aes-256-gcm", key, iv);
+    let data = cipher.update(payload, "utf8", "hex");
+    data += cipher.final("hex");
+    data += cipher.getAuthTag().toString("hex");
+    return {
+      kid: id,
+      enc: "A256GCM",
+      cty: "b5+jwk+json",
+      iv: base64safe.encode(iv),
+      data: base64safe.encode(Buffer.from(data, "hex"))
+    };
   }
 
   private srpX(): string {
@@ -167,7 +174,7 @@ export class Cipher {
     return x.toString("hex");
   }
 
-  private deriveMasterUnlockKey(encSymKey: any): string {
+  private deriveMasterUnlockKey(encSymKey: any): Buffer {
     const salt = base64safe.decode(encSymKey.p2s);
     const iterations = encSymKey.p2c;
     const username = Buffer.from(this.auth.email);
@@ -187,34 +194,10 @@ export class Cipher {
       salt: keyID,
       hash: "sha-256"
     });
-    const masterKey = xor(key3, key2);
-    return base64safe.encode(masterKey);
+    return xor(key3, key2);
   }
 
-  private deriveSymKey(masterEncodedKey: string, encSymKey: any): string {
-    const keyData = base64safe.decode(encSymKey.data);
-    const iv = base64safe.decode(encSymKey.iv);
-    const masterKey = base64safe.decode(masterEncodedKey);
-    const decipher = createDecipheriv("aes-256-gcm", masterKey, iv);
-    decipher.setAuthTag(keyData.slice(-16));
-    let key = decipher.update(keyData.slice(0, -16), null, "utf8");
-    key += decipher.final("utf8");
-    const { k } = JSON.parse(key);
-    return k;
-  }
-
-  private derivePrivateKey(symEncodedKey: string, encPriKey: any): any {
-    const keyData = base64safe.decode(encPriKey.data);
-    const iv = base64safe.decode(encPriKey.iv);
-    const symKey = base64safe.decode(symEncodedKey);
-    const decipher = createDecipheriv("aes-256-gcm", symKey, iv);
-    decipher.setAuthTag(keyData.slice(-16));
-    let key = decipher.update(keyData.slice(0, -16), null, "utf8");
-    key += decipher.final("utf8");
-    return JSON.parse(key);
-  }
-
-  private getPrivateKey(key: any): NodeRSA {
+  private formatPrivateKey(key: any): NodeRSA {
     const asymkey = new NodeRSA();
     asymkey.importKey(
       {

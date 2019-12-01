@@ -1,22 +1,19 @@
-import {
-  createHmac,
-  randomBytes,
-  createCipheriv,
-  createDecipheriv
-} from "crypto";
+import { createHmac, randomBytes, createCipheriv } from "crypto";
 import base64safe from "urlsafe-base64";
+import { Cipher } from "./Cipher";
 import { baseURL } from "../config";
 import {
   Session,
   HttpBody,
   HttpMethod,
   HttpHeaders,
-  EncryptedPrivateKey
+  EncryptedPayload
 } from "../types";
 
 export default class {
   private session: Session;
   private requestID: number = 1;
+  private cipherService: Cipher = new Cipher();
 
   public setSession(session: Session) {
     this.session = session;
@@ -51,43 +48,26 @@ export default class {
     method: HttpMethod,
     message?: HttpBody
   ) {
-    let payload: any = "";
-    if (message) {
-      let iv = randomBytes(12);
-      const cipher = createCipheriv(
-        "aes-256-gcm",
-        Buffer.from(this.session.key, "hex"),
-        iv
-      );
-      let data = cipher.update(JSON.stringify(message), "utf8", "hex");
-      data += cipher.final("hex");
-      data += cipher.getAuthTag().toString("hex");
-      payload = {
-        kid: this.session.id,
-        enc: "A256GCM",
-        cty: "b5+jwk+json",
-        iv: base64safe.encode(iv),
-        data: base64safe.encode(Buffer.from(data, "hex"))
-      };
-    }
     this.requestID++;
-    let { iv, data, kid } = (await this.request(endpoint, method, payload, {
+    const payload = message
+      ? this.cipherService.cipher(JSON.stringify(message), {
+          key: Buffer.from(this.session.key, "hex"),
+          id: this.session.id
+        })
+      : {};
+    const encData = (await this.request(endpoint, method, payload, {
       "X-AgileBits-Session-ID": this.session.id,
       "X-AgileBits-MAC": await this.createMACHeader(
         method,
         `https://my.1password.com/api/${endpoint}`
       )
-    })) as EncryptedPrivateKey;
-    if (kid !== this.session.id) throw new Error("Session mismatch.");
-    const decipher = createDecipheriv(
-      "aes-256-gcm",
-      Buffer.from(this.session.key, "hex"),
-      base64safe.decode(iv)
+    })) as EncryptedPayload;
+    if (encData.kid !== this.session.id)
+      throw new Error("Wrong master password / secret key.");
+    return this.cipherService.decipher(
+      encData,
+      Buffer.from(this.session.key, "hex")
     );
-    decipher.setAuthTag(base64safe.decode(data).slice(-16));
-    data = decipher.update(base64safe.decode(data).slice(0, -16), null, "utf8");
-    data += decipher.final("utf8");
-    return JSON.parse(data);
   }
 
   private createMACHeader(requestMethod: string, requestURL: string) {

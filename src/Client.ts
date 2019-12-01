@@ -88,7 +88,7 @@ export default class OnepasswordClient implements Client {
     ) as DecryptedItemDetail;
     const username = find(fields, ["designation", "username"]);
     const password = find(fields, ["designation", "password"]);
-    const otp = sections ? extractOtp(sections) : "";
+    const otp = extractOtp(sections);
     return {
       username: username ? username.value : "",
       password: password ? password.value : "",

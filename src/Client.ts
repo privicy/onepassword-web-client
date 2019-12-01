@@ -44,7 +44,7 @@ export default class OnepasswordClient implements Client {
     this.masterKeys = this.cipher.getMasterPrivateKeys(encKeySets);
   }
 
-  public async getAccounts(): Promise<Entry[]> {
+  public async getEntries(): Promise<Entry[]> {
     const vaults = await this.onepassword.getVaults();
     const entries = vaults.map(async ({ uuid, access }) => {
       const [{ encVaultKey, encryptedBy }] = access;
@@ -71,7 +71,7 @@ export default class OnepasswordClient implements Client {
     return flatten(await Promise.all(entries));
   }
 
-  public async getAccountCredentials(id: string): Promise<EntryCredentials> {
+  public async getEntryCredentials(id: string): Promise<EntryCredentials> {
     const [vaultID, uuid] = id.split(":");
     const vaults = await this.onepassword.getVaults();
     const {
@@ -96,5 +96,5 @@ export default class OnepasswordClient implements Client {
     };
   }
 
-  public async addAccount(entry: RawEntry): Promise<void> {}
+  public async addEntry(entry: RawEntry): Promise<void> {}
 }

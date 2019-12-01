@@ -11,9 +11,9 @@
 
 ## Methods
 
-### addAccount
+### addEntry
 
-▸ **addAccount**(`entry`: [RawEntry]): _Promise‹boolean›_
+▸ **addEntry**(`entry`: [RawEntry]): _Promise‹boolean›_
 
 **Parameters:**
 
@@ -25,17 +25,17 @@
 
 ---
 
-### getAccounts
+### getEntries
 
-▸ **getAccounts**(): _Promise‹[Entry]_
+▸ **getEntries**(): _Promise‹[Entry]_
 
 **Returns:** _Promise_
 
 ---
 
-### getAccountCredentials
+### getEntryCredentials
 
-▸ **getAccountCredentials**(`accountId`: string): _Promise‹[EntryCredentials]_
+▸ **getEntryCredentials**(`accountId`: string): _Promise‹[EntryCredentials]_
 
 **Returns:** _Promise_
 

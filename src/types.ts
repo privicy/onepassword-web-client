@@ -16,9 +16,9 @@ export interface Client {
     username?: string,
     secret?: string
   ) => Promise<void>;
-  getAccounts: () => Promise<Entry[]>;
-  getAccountCredentials: (fqdn: string) => Promise<EntryCredentials>;
-  addAccount: (account: Entry) => Promise<void>;
+  getEntries: () => Promise<Entry[]>;
+  getEntryCredentials: (fqdn: string) => Promise<EntryCredentials>;
+  addEntry: (account: Entry) => Promise<void>;
 }
 
 export type Device = Record<

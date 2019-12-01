@@ -17,15 +17,16 @@ export const pluck = (properties: string[], data: any[]) => {
 
 export const extractOtp = (sections: any[]) => {
   let otp = "";
-  sections.map(({ fields }) => {
-    Array.isArray(fields) &&
-      fields.map(({ n, v }: any) => {
-        if (!!n.match(/TOTP/gi)) {
-          const { secret = "" } = queryString.parse(v.split("?").pop());
-          otp = secret as string;
-        }
-      });
-  });
+  Array.isArray(sections) &&
+    sections.map(({ fields }) => {
+      Array.isArray(fields) &&
+        fields.map(({ n, v }: any) => {
+          if (!!n.match(/TOTP/gi)) {
+            const { secret = "" } = queryString.parse(v.split("?").pop());
+            otp = secret as string;
+          }
+        });
+    });
   return otp;
 };
 

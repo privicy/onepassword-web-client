@@ -101,7 +101,7 @@ export default class OnepasswordClient implements Client {
         encOverview.data,
         encOverview.iv
       ) as DecryptedItemOverview;
-      if (url.match(new RegExp(fqdn))) {
+      if (url && url.match(new RegExp(fqdn))) {
         item = items[i];
         break;
       }

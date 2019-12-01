@@ -96,5 +96,5 @@ export default class OnepasswordClient implements Client {
     };
   }
 
-  public async addEntry(entry: RawEntry): Promise<void> {}
+  public async addEntry(entry: RawEntry): Promise<string> {return '';}
 }

@@ -53,7 +53,8 @@ export default class OnepasswordClient implements Client {
         this.masterKeys[encryptedBy]
       );
       const vaultKey = base64safe.decode(k);
-      const items = await this.onepassword.getItemsOverview(uuid);
+      let items = await this.onepassword.getItemsOverview(uuid);
+      items = items.filter(i=>i.trashed !== 'Y');
       return items.map(({ encOverview, uuid: itemId }) => {
         const { url, title, tags, ainfo } = this.cipher.decipher(
           encOverview,

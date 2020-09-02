@@ -17,6 +17,7 @@ export interface Client {
     secret?: string
   ) => Promise<void>;
   getEntries: () => Promise<Entry[]>;
+  getEntry: (fqdn: string) => Promise<EntryDetail>;
   getEntryCredentials: (fqdn: string) => Promise<EntryCredentials>;
   addEntry: (account: Entry) => Promise<string>;
 }
@@ -159,12 +160,37 @@ export type DecryptedItemOverview = {
 };
 
 export type DecryptedItemDetail = {
-  sections: Array<{ name: string; title: string; fields: string[] }>;
+  sections: Array<{ name: string; title: string; fields: Array<{
+      k: string;
+      n: string;
+      t: string;
+      v: string;
+    }> }>;
   fields: Array<{
     name: string;
     value: string;
     type: string;
     designation: string;
   }>;
+  password: string;
   notesPlain: string;
+  username: string;
+};
+
+export type EntryDetail = {
+  sections: Array<{ name: string; title: string; fields: Array<{
+      id: string;
+      title: string;
+      value: string;
+      type: string;
+    }> }>;
+  fields: Array<{
+    name: string;
+    value: string;
+    type: string;
+    designation: string;
+  }>;
+  password: string;
+  notesPlain: string;
+  username: string;
 };

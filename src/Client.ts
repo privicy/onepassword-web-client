@@ -1,17 +1,18 @@
 import base64safe from "urlsafe-base64";
-import { find, flatten } from "lodash";
+import {find, flatten} from "lodash";
 import NodeRSA from "node-rsa";
-import { Cipher } from "./services/Cipher";
-import { Onepassword } from "./services/Onepassword";
+import {Cipher} from "./services/Cipher";
+import {Onepassword} from "./services/Onepassword";
 import {
   Client,
-  Entry,
-  DecryptedItemOverview,
   DecryptedItemDetail,
+  DecryptedItemOverview,
+  Entry,
   EntryCredentials,
+  EntryDetail,
   RawEntry
 } from "./types";
-import { extractOtp, getKey } from "./utilities";
+import {extractOtp, getKey} from "./utilities";
 
 export default class OnepasswordClient implements Client {
   private cipher: Cipher;
@@ -73,20 +74,7 @@ export default class OnepasswordClient implements Client {
   }
 
   public async getEntryCredentials(id: string): Promise<EntryCredentials> {
-    const [vaultID, uuid] = id.split(":");
-    const vaults = await this.onepassword.getVaults();
-    const {
-      access: [{ encVaultKey, encryptedBy }]
-    } = find(vaults, ["uuid", vaultID]);
-    const { k: vaultKey } = this.cipher.decipher(
-      encVaultKey,
-      this.masterKeys[encryptedBy]
-    );
-    const { encDetails } = await this.onepassword.getItemDetail(uuid, vaultID);
-    const { fields, sections } = this.cipher.decipher(
-      encDetails,
-      base64safe.decode(vaultKey)
-    ) as DecryptedItemDetail;
+    const {fields, sections} = await this.getEntryDetails(id);
     const username = find(fields, ["designation", "username"]);
     const password = find(fields, ["designation", "password"]);
     const otp = extractOtp(sections);
@@ -94,6 +82,52 @@ export default class OnepasswordClient implements Client {
       username: username ? username.value : "",
       password: password ? password.value : "",
       otp
+    };
+  }
+
+  private async getEntryDetails(id: string) : Promise<DecryptedItemDetail>{
+    const [vaultID, uuid] = id.split(":");
+    const vaults = await this.onepassword.getVaults();
+    const {
+      access: [{encVaultKey, encryptedBy}]
+    } = find(vaults, ["uuid", vaultID]);
+    const {k: vaultKey} = this.cipher.decipher(
+        encVaultKey,
+        this.masterKeys[encryptedBy]
+    );
+    const {encDetails} = await this.onepassword.getItemDetail(uuid, vaultID);
+    return this.cipher.decipher(
+        encDetails,
+        base64safe.decode(vaultKey)
+    ) as DecryptedItemDetail;
+  }
+
+  public async getEntry(id: string): Promise<EntryDetail> {
+    const rawItemDetail = await this.getEntryDetails(id);
+      return OnepasswordClient.mapToItemDetails(rawItemDetail);
+  }
+
+  private static mapToItemDetails(rawItemDetail: DecryptedItemDetail): EntryDetail {
+    let sections = rawItemDetail.sections ?
+        rawItemDetail.sections.map((rawSection) => {
+          let fields = rawSection.fields ?
+              rawSection.fields.map((rawField) => {
+                return {id: rawField.n, type: rawField.k, title: rawField.t, value: rawField.v}
+              })
+              : undefined;
+          return {
+            name: rawSection.name,
+            title: rawSection.title,
+            fields: fields
+          }
+        })
+        : undefined;
+    return {
+      fields: rawItemDetail.fields,
+      notesPlain: rawItemDetail.notesPlain,
+      password: rawItemDetail.password,
+      sections: sections,
+      username: rawItemDetail.username
     };
   }
 

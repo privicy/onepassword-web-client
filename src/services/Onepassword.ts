@@ -73,7 +73,7 @@ export class Onepassword {
     const message = {
       sessionID: this.session.id,
       clientVerifyHash,
-      client: "1Password for Web/637",
+      client: "1Password for Web/945",
       device: this.device
     };
     const { serverVerifyHash } = await this.requestService.secureRequest(

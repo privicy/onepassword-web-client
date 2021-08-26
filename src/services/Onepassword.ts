@@ -1,5 +1,4 @@
 import { randomBytes } from "crypto";
-import { flatten } from "lodash";
 import RequestService from "./Request";
 import {
   Key,
@@ -12,12 +11,15 @@ import {
   EncryptedItem,
   EncryptedItemModified
 } from "../types";
-import { device } from "../config";
 
 export class Onepassword {
-  private device: Device = device;
+  private readonly device: Device;
   private session: Session;
   private requestService: RequestService = new RequestService();
+
+  public constructor(device: Device) {
+    this.device = device;
+  }
 
   public setSession(session: Session) {
     this.session = session;
@@ -73,7 +75,7 @@ export class Onepassword {
     const message = {
       sessionID: this.session.id,
       clientVerifyHash,
-      client: "1Password for Web/1065",
+      client: `${this.device.clientName}/${this.device.clientVersion}`,
       device: this.device
     };
     const { serverVerifyHash } = await this.requestService.secureRequest(

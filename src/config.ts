@@ -7,7 +7,7 @@ export const g = "05";
 
 export const device: Device = {
   clientName: "1Password for Web",
-  clientVersion: "1198",
+  clientVersion: "1217",
   model: "73.0.3683.103",
   name: "Chrome",
   osName: "MacOSX",

@@ -19,8 +19,8 @@ export class Onepassword {
   private session: Session;
   private requestService: RequestService;
 
-  constructor(userDevice: Device = device) {
-    this.device = userDevice;
+  public constructor(userDeviceConfig: object = {}) {
+    this.device = { ...device, ...userDeviceConfig };
     this.requestService = new RequestService(this.device);
   }
 

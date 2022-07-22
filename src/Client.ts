@@ -5,6 +5,7 @@ import {Cipher} from "./services/Cipher";
 import {Onepassword} from "./services/Onepassword";
 import {
   Client,
+  Device,
   DecryptedItemDetail,
   DecryptedItemOverview,
   Entry,
@@ -12,6 +13,7 @@ import {
   EntryDetail,
   RawEntry
 } from "./types";
+import { device } from "./config";
 import {extractOtp, getKey} from "./utilities";
 
 export default class OnepasswordClient implements Client {
@@ -19,9 +21,9 @@ export default class OnepasswordClient implements Client {
   private onepassword: Onepassword;
   private masterKeys: Record<string, NodeRSA>;
 
-  public constructor() {
+  public constructor(userDeviceConfig: object = {}) {
     this.cipher = new Cipher();
-    this.onepassword = new Onepassword();
+    this.onepassword = new Onepassword(userDeviceConfig);
   }
 
   public async login(

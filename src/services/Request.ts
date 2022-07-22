@@ -17,7 +17,7 @@ export default class {
   private cipherService: Cipher = new Cipher();
   private device: Device;
 
-  constructor(device: Device) {
+  public constructor(device: Device) {
     this.device = device;
   }
 

@@ -3,6 +3,7 @@ import base64safe from "urlsafe-base64";
 import { Cipher } from "./Cipher";
 import { baseURL } from "../config";
 import {
+  Device,
   Session,
   HttpBody,
   HttpMethod,
@@ -14,6 +15,11 @@ export default class {
   private session: Session;
   private requestID: number = 1;
   private cipherService: Cipher = new Cipher();
+  private device: Device;
+
+  constructor(device: Device) {
+    this.device = device;
+  }
 
   public setSession(session: Session) {
     this.session = session;
@@ -27,7 +33,7 @@ export default class {
   ): Promise<any> {
     headers = {
       "x-requested-with": "XMLHttpRequest",
-      "x-agilebits-client": "1Password for Web/1217",
+      "x-agilebits-client": `1Password for Web/${this.device.clientVersion}`,
       "User-Agent":
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36",
       ...(method !== "GET" && { "Content-Type": "application/json" }),

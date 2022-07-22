@@ -15,9 +15,14 @@ import {
 import { device } from "../config";
 
 export class Onepassword {
-  private device: Device = device;
+  private device: Device;
   private session: Session;
-  private requestService: RequestService = new RequestService();
+  private requestService: RequestService;
+
+  constructor(userDevice: Device = device) {
+    this.device = userDevice;
+    this.requestService = new RequestService(this.device);
+  }
 
   public setSession(session: Session) {
     this.session = session;
@@ -73,7 +78,7 @@ export class Onepassword {
     const message = {
       sessionID: this.session.id,
       clientVerifyHash,
-      client: "1Password for Web/1217",
+      client: `1Password for Web/${this.device.clientVersion}`,
       device: this.device
     };
     const { serverVerifyHash } = await this.requestService.secureRequest(
